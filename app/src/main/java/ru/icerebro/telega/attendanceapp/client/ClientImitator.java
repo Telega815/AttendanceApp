@@ -41,7 +41,8 @@ public class ClientImitator implements AttendanceClient {
     }
 
     @Override
-    public List<Attendance> getAttendance(Attendance attendance) {
+    public List<Attendance> getAttendance(Employee employee, int day, int month, int year) {
+
         return null;
     }
 

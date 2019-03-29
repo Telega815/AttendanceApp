@@ -1,9 +1,7 @@
 package ru.icerebro.telega.attendanceapp;
 
-import android.app.TaskStackBuilder;
-import android.graphics.drawable.ColorDrawable;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.constraint.Group;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -16,13 +14,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import ru.icerebro.telega.attendanceapp.Adapters.EmplsAdapter;
 import ru.icerebro.telega.attendanceapp.client.AttendanceClient;
 import ru.icerebro.telega.attendanceapp.client.ClientImitator;
 import ru.icerebro.telega.attendanceapp.entities.Department;
@@ -94,7 +90,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
+        // Handle action bar employeeItem clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
@@ -110,11 +106,11 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+        // Handle navigation view employeeItem clicks here.
         Department department = new Department();
         department.setId(item.getItemId());
         department.setDepName(item.getTitle().toString());
-        //int id = item.getItemId();
+        //int id = employeeItem.getItemId();
 
 
         if (this.getSupportActionBar() != null){
@@ -139,27 +135,14 @@ public class MainActivity extends AppCompatActivity
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            private View focusedView;
+//            private View focusedView;
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (focusedView != null){
-                    focusedView.setBackgroundColor(0xFFFFFFFF);
-                }
-                view.setBackgroundColor(0xFF00FF00);
-                focusedView = view;
+                Intent intent = new Intent(MainActivity.this, EmployeeActivity.class);
+                startActivity(intent);
+
             }
         });
-
-
-//        if (id == R.id.nav_camera) {
-//            // Handle the camera action
-//        } else if (id == R.id.nav_gallery) {
-//
-//        } else if (id == R.id.nav_slideshow) {
-//
-//        } else if (id == R.id.nav_manage) {
-//
-//        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

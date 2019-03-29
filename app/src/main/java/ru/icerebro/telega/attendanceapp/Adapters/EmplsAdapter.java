@@ -1,4 +1,4 @@
-package ru.icerebro.telega.attendanceapp;
+package ru.icerebro.telega.attendanceapp.Adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,12 +9,13 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ru.icerebro.telega.attendanceapp.R;
 import ru.icerebro.telega.attendanceapp.entities.Employee;
 
 public class EmplsAdapter extends BaseAdapter {
-    Context ctx;
-    LayoutInflater lInflater;
-    List<Employee> objects;
+    private Context ctx;
+    private LayoutInflater lInflater;
+    private List<Employee> objects;
 
     public EmplsAdapter(Context context, List<Employee> products) {
         ctx = context;
@@ -42,7 +43,7 @@ public class EmplsAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         if (view == null) {
-            view = lInflater.inflate(R.layout.item, parent, false);
+            view = lInflater.inflate(R.layout.employee_item, parent, false);
         }
 
         Employee employee = (Employee) getItem(position);

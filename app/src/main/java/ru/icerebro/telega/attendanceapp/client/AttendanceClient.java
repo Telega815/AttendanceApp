@@ -10,7 +10,7 @@ public interface AttendanceClient {
 
     List<Department> getDepartments();
     List<Employee> getEmployees(Department department);
-    List<Attendance> getAttendance(Attendance attendance);
+    List<Attendance> getAttendance(Employee employee, int day, int month, int year);
 
     void writeAttendance(Attendance attendance);
     void createDepartment(Department department);
