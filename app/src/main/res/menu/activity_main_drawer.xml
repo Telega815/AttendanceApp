@@ -4,24 +4,24 @@
     tools:showIn="navigation_view">
 
     <group
-        android:id="@+id/analGroup"
+        android:id="@+id/departmentsGroup"
         android:checkableBehavior="single">
         <!--<employeeItem-->
-            <!--android:id="@+id/nav_camera"-->
-            <!--android:icon="@drawable/ic_menu_camera"-->
-            <!--android:title="Import" />-->
+        <!--android:id="@+id/nav_camera"-->
+        <!--android:icon="@drawable/ic_menu_camera"-->
+        <!--android:title="Import" />-->
         <!--<employeeItem-->
-            <!--android:id="@+id/nav_gallery"-->
-            <!--android:icon="@drawable/ic_menu_gallery"-->
-            <!--android:title="Gallery" />-->
+        <!--android:id="@+id/nav_gallery"-->
+        <!--android:icon="@drawable/ic_menu_gallery"-->
+        <!--android:title="Gallery" />-->
         <!--<employeeItem-->
-            <!--android:id="@+id/nav_slideshow"-->
-            <!--android:icon="@drawable/ic_menu_slideshow"-->
-            <!--android:title="Slideshow" />-->
+        <!--android:id="@+id/nav_slideshow"-->
+        <!--android:icon="@drawable/ic_menu_slideshow"-->
+        <!--android:title="Slideshow" />-->
         <!--<employeeItem-->
-            <!--android:id="@+id/nav_manage"-->
-            <!--android:icon="@drawable/ic_menu_manage"-->
-            <!--android:title="Tools" />-->
+        <!--android:id="@+id/nav_manage"-->
+        <!--android:icon="@drawable/ic_menu_manage"-->
+        <!--android:title="Tools" />-->
     </group>
 
 </menu>

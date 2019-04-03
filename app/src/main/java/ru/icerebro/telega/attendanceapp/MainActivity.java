@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -57,11 +58,12 @@ public class MainActivity extends AppCompatActivity
         Menu menu = navigationView.getMenu();
 
         //-----------------------
-        client = new ClientImitator();
+        client = ClientImitator.getINSTANCE();
+
         List<Department> list = client.getDepartments();
 
         for (Department d:list) {
-            menu.add(R.id.analGroup, d.getId(),  0, d.getDepName()).setCheckable(true);
+            menu.add(R.id.departmentsGroup, d.getId(),  0, d.getDepName()).setCheckable(true);
         }
 
         MenuItem menuItem = menu.getItem(0);
@@ -127,7 +129,7 @@ public class MainActivity extends AppCompatActivity
 //            }
 //        });
 
-        List<Employee> employees = client.getEmployees(department);
+        final List<Employee> employees = client.getEmployees(department);
 
         final EmplsAdapter adapter = new EmplsAdapter(this, employees);
 
@@ -138,9 +140,9 @@ public class MainActivity extends AppCompatActivity
 //            private View focusedView;
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                EmployeeActivity.setChoosenEmployee(employees.get(position));
                 Intent intent = new Intent(MainActivity.this, EmployeeActivity.class);
                 startActivity(intent);
-
             }
         });
 

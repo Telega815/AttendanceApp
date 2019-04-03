@@ -10,14 +10,14 @@ import android.widget.TextView;
 import java.util.List;
 
 import ru.icerebro.telega.attendanceapp.R;
-import ru.icerebro.telega.attendanceapp.entities.Employee;
+import ru.icerebro.telega.attendanceapp.entities.Attendance;
 
 public class AttendanceAdapter extends BaseAdapter {
     private Context ctx;
     private LayoutInflater lInflater;
-    private List<Employee> objects;
+    private List<Attendance> objects;
 
-    public AttendanceAdapter(Context context, List<Employee> products) {
+    public AttendanceAdapter(Context context, List<Attendance> products) {
         ctx = context;
         objects = products;
         lInflater = (LayoutInflater) ctx
@@ -43,17 +43,12 @@ public class AttendanceAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         if (view == null) {
-            view = lInflater.inflate(android.R.layout.simple_dropdown_item_1line, parent, false);
+            view = lInflater.inflate(R.layout.attendance_item, parent, false);
         }
 
-        Employee employee = (Employee) getItem(position);
+        Attendance attendance = (Attendance) getItem(position);
 
-        ((TextView) view.findViewById(R.id.emp_surname)).setText(employee.getSurname());
-        ((TextView) view.findViewById(R.id.emp_name)).setText(employee.getName());
-        ((TextView) view.findViewById(R.id.emp_patronymic)).setText(employee.getPatronymic());
-
-        ((TextView) view.findViewById(R.id.emp_id)).setText("id: "+employee.getId());
-        ((TextView) view.findViewById(R.id.emp_key)).setText("key: "+employee.getKey());
+        ((TextView) view.findViewById(R.id.textViewAttendance)).setText(attendance.getTime().toString() +" "+ attendance.getDay()+"."+attendance.getMonth()+"."+ attendance.getaYear());
 
         return view;
     }
