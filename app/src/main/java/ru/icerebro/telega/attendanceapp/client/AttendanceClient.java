@@ -14,8 +14,11 @@ public interface AttendanceClient {
 
     boolean writeAttendance(Attendance attendance);
     boolean deleteAttendance(Attendance attendance);
-    void createDepartment(Department department);
-    void createEmployee(Employee employee);
+    boolean createDepartment(Department department);
+    boolean createEmployee(Employee employee);
+    boolean updateDepartment(Department department);
+    boolean updateEmployee(Employee employee);
+    boolean deleteEmployee(Employee employee);
 
     boolean isConnected();
 }

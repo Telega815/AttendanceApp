@@ -5,7 +5,13 @@
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
     <string name="action_edit">Edit</string>
+    <string name="action_dep_delete">Delete</string>
     <string name="title_activity_employee">EmployeeActivity</string>
+    <string name="patronymic">patronymic</string>
+    <string name="key">key</string>
+    <string name="name">name</string>
+    <string name="surname">surname</string>
+    <string name="rename_department">Rename department</string>
+    <string name="dep_name">Dep name</string>
 </resources>

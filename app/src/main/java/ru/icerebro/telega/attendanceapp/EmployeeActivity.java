@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -46,14 +47,15 @@ public class EmployeeActivity extends AppCompatActivity {
 
     private AttendanceClient attendanceClient;
 
-    private static Employee choosenEmployee;
+    private static Employee chosenEmployee;
+
+    private AlertDialog.Builder builder;
 
 
+    //Listeners------------------------------------------------------------------------------------------------------
     TimePickerDialog.OnTimeSetListener myTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-
-
 
             Attendance attendance = new Attendance();
             attendance.setaYear(myYear);
@@ -62,12 +64,12 @@ public class EmployeeActivity extends AppCompatActivity {
             calendar.set(myYear, myMonth, myDay, hourOfDay, minute);
             attendance.setTime(new Time(calendar.getTime().getTime()));
             attendance.setId(0);
-            attendanceClient.writeAttendance(attendance);
+
+            showNotification(attendanceClient.writeAttendance(attendance));
 
             refreshAttlist();
         }
     };
-
 
     DatePickerDialog.OnDateSetListener myCallBack = new DatePickerDialog.OnDateSetListener() {
 
@@ -77,25 +79,72 @@ public class EmployeeActivity extends AppCompatActivity {
             myMonth = monthOfYear;
             myDay = dayOfMonth;
             calendar.set(myYear, myMonth, myDay);
+
             textView.setText(myDay + " " + calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH) + " " + myYear);
 
             refreshAttlist();
         }
     };
 
-    private AlertDialog.Builder builder;
-    private DialogInterface.OnClickListener deleteDialogClickListener;
-    private DialogInterface.OnClickListener addDialogClickListener;
+    private DialogInterface.OnClickListener deleteDialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+                    showNotification(attendanceClient.deleteAttendance(selectedAttendance));
 
-    public static void setChoosenEmployee(Employee choosenEmployee) {
-        EmployeeActivity.choosenEmployee = choosenEmployee;
+                    myCallBack.onDateSet(null, myYear, myMonth, myDay);
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
+
+    private DialogInterface.OnClickListener editDialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+
+                    chosenEmployee.setSurname(((TextView)editDialog.findViewById(R.id.dialog_emp_surname)).getText().toString());
+                    chosenEmployee.setName(((TextView)editDialog.findViewById(R.id.dialog_emp_name)).getText().toString());
+                    chosenEmployee.setPatronymic(((TextView)editDialog.findViewById(R.id.dialog_emp_patronymic)).getText().toString());
+                    chosenEmployee.setKey(Integer.valueOf(((TextView)editDialog.findViewById(R.id.dialog_emp_key)).getText().toString()));
+
+                    showNotification(attendanceClient.updateEmployee(chosenEmployee));
+
+                    if (EmployeeActivity.this.getSupportActionBar() != null)
+                        EmployeeActivity.this.getSupportActionBar().setTitle(chosenEmployee.getSurname() + " " + chosenEmployee.getName());
+
+                    myCallBack.onDateSet(null, myYear, myMonth, myDay);
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
+    //Listeners------------------------------------------------------------------------------------------------------
+
+    AlertDialog editDialog;
+
+
+    public static void setChosenEmployee(Employee chosenEmployee) {
+        EmployeeActivity.chosenEmployee = chosenEmployee;
     }
 
     private void refreshAttlist(){
+
         final ListView listView = findViewById(R.id._AttendanceList);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        List<Attendance> attendanceList = attendanceClient.getAttendance(choosenEmployee, myDay, myMonth, myYear);
+        List<Attendance> attendanceList = attendanceClient.getAttendance(chosenEmployee, myDay, myMonth, myYear);
 
         final AttendanceAdapter adapter = new AttendanceAdapter(EmployeeActivity.this, attendanceList);
 
@@ -134,12 +183,18 @@ public class EmployeeActivity extends AppCompatActivity {
         });
         //-----------------------------------------------------------------------------------------------------------------------
 
+        builder = new AlertDialog.Builder(this);
+        editDialog = builder.setPositiveButton("Save", editDialogClickListener)
+                .setNegativeButton("Cancel", editDialogClickListener)
+                .setView(R.layout.dialog_empl_edit).create();
+
+
 
 
         attendanceClient = ClientImitator.getINSTANCE();
 
         if (this.getSupportActionBar() != null)
-            this.getSupportActionBar().setTitle(choosenEmployee.getSurname() + " " + choosenEmployee.getName());
+            this.getSupportActionBar().setTitle(chosenEmployee.getSurname() + " " + chosenEmployee.getName());
 
         myCallBack.onDateSet(null, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 
@@ -165,34 +220,20 @@ public class EmployeeActivity extends AppCompatActivity {
 
 
         //Delete dialog-----------------------------------------------------------------
-        deleteDialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        //Yes button clicked
-                        attendanceClient.deleteAttendance(selectedAttendance);
-                        myCallBack.onDateSet(null, myYear, myMonth, myDay);
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        //No button clicked
-                        break;
-                }
-            }
-        };
-
-        builder = new AlertDialog.Builder(this);
-
         final ListView listView = findViewById(R.id._AttendanceList);
+
 
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Attendance attendance = (Attendance) listView.getItemAtPosition(position);
                 selectedAttendance = attendance;
-                builder.setMessage("Delete this attendance?\n"+attendance.getTime().toString()).setPositiveButton("Yes", deleteDialogClickListener)
+
+                AlertDialog.Builder b = new AlertDialog.Builder(EmployeeActivity.this);
+
+                b.setMessage("Delete this attendance?\n"+attendance.getTime().toString()).setPositiveButton("Yes", deleteDialogClickListener)
                         .setNegativeButton("No", deleteDialogClickListener).show();
+
                 return false;
             }
         });
@@ -215,18 +256,36 @@ public class EmployeeActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_edit) {
-            AlertDialog dialog = builder.setPositiveButton("Yes", deleteDialogClickListener)
-                    .setNegativeButton("No", deleteDialogClickListener)
-                    .setView(R.layout.dialog_empl_edit).create();
+            editDialog.show();
 
-//            TextView tv = dialog.findViewById(R.id.dialog_header_text);
-//            tv.setText(choosenEmployee.getSurname() + " " + choosenEmployee.getName());
 
-            dialog.show();
+            ((TextView)editDialog.findViewById(R.id.dialog_header_text)).setText(chosenEmployee.getSurname() + " " + chosenEmployee.getName());
+
+            ((TextView)editDialog.findViewById(R.id.dialog_emp_id)).setText("id: "+ chosenEmployee.getId());
+
+            ((TextView)editDialog.findViewById(R.id.dialog_emp_department)).setText(chosenEmployee.getDepartment().getDepName());
+
+            ((TextView)editDialog.findViewById(R.id.dialog_emp_surname)).setText(chosenEmployee.getSurname());
+
+            ((TextView)editDialog.findViewById(R.id.dialog_emp_name)).setText(chosenEmployee.getName());
+
+            ((TextView)editDialog.findViewById(R.id.dialog_emp_patronymic)).setText(chosenEmployee.getPatronymic());
+
+            ((TextView)editDialog.findViewById(R.id.dialog_emp_key)).setText(String.valueOf(chosenEmployee.getKey()));
 
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showNotification(boolean success){
+        if (success){
+            Snackbar.make(findViewById(R.id.fabAddAttendance), "Success!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }else {
+            Snackbar.make(findViewById(R.id.fabAddAttendance), "Failure!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
     }
 }

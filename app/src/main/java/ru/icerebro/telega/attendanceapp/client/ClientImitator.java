@@ -87,13 +87,30 @@ public class ClientImitator implements AttendanceClient {
     }
 
     @Override
-    public void createDepartment(Department department) {
-
+    public boolean createDepartment(Department department) {
+        return false;
     }
 
     @Override
-    public void createEmployee(Employee employee) {
+    public boolean createEmployee(Employee employee) {
+        return true;
+    }
 
+    @Override
+    public boolean updateDepartment(Department department) {
+        return false;
+    }
+
+    @Override
+    public boolean updateEmployee(Employee employee) {
+
+        return true;
+    }
+
+    @Override
+    public boolean deleteEmployee(Employee employee) {
+
+        return true;
     }
 
     @Override

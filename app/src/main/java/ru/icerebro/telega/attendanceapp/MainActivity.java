@@ -1,5 +1,7 @@
 package ru.icerebro.telega.attendanceapp;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -27,7 +30,80 @@ import ru.icerebro.telega.attendanceapp.entities.Employee;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private AttendanceClient client;
+    private AttendanceClient attendanceClient;
+
+    private MenuItem chosenItem;
+
+    private AlertDialog addEmployeeDialog;
+    private AlertDialog renameDepartmentDialog;
+
+
+    //listeners----------------------------------------------------------
+    private DialogInterface.OnClickListener addDialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+                    Department department = new Department();
+                    department.setId(chosenItem.getItemId());
+                    department.setDepName(chosenItem.getTitle().toString());
+
+                    Employee employee = new Employee();
+
+                    employee.setDepartment(department);
+                    employee.setSurname(((TextView)addEmployeeDialog.findViewById(R.id.dialog_emp_surname)).getText().toString());
+                    employee.setName(((TextView)addEmployeeDialog.findViewById(R.id.dialog_emp_name)).getText().toString());
+                    employee.setPatronymic(((TextView)addEmployeeDialog.findViewById(R.id.dialog_emp_patronymic)).getText().toString());
+                    employee.setKey(Integer.valueOf(((TextView)addEmployeeDialog.findViewById(R.id.dialog_emp_key)).getText().toString()));
+
+                    showNotification(attendanceClient.createEmployee(employee));
+
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
+
+    private DialogInterface.OnClickListener renameDialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+                    Department department = new Department();
+                    department.setId(chosenItem.getItemId());
+                    department.setDepName(((TextView)renameDepartmentDialog.findViewById(R.id.dialog_dep_name)).getText().toString());
+
+
+                    showNotification(attendanceClient.updateDepartment(department));
+
+                    NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+                    Menu menu = navigationView.getMenu();
+
+                    menu.removeGroup(R.id.departmentsGroup);
+                    List<Department> list = attendanceClient.getDepartments();
+
+                    for (Department d:list) {
+                        menu.add(R.id.departmentsGroup, d.getId(),  0, d.getDepName()).setCheckable(true);
+                    }
+
+                    MenuItem menuItem = menu.getItem(0);
+                    MainActivity.this.onNavigationItemSelected(menuItem);
+
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
+    //==================================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +117,9 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                addEmployeeDialog.show();
             }
         });
 
@@ -57,19 +134,28 @@ public class MainActivity extends AppCompatActivity
 
         Menu menu = navigationView.getMenu();
 
-        //-----------------------
-        client = ClientImitator.getINSTANCE();
+        //-------------------------------------------------------------------------------------------
+        attendanceClient = ClientImitator.getINSTANCE();
 
-        List<Department> list = client.getDepartments();
+        List<Department> list = attendanceClient.getDepartments();
 
         for (Department d:list) {
             menu.add(R.id.departmentsGroup, d.getId(),  0, d.getDepName()).setCheckable(true);
         }
 
         MenuItem menuItem = menu.getItem(0);
-
         this.onNavigationItemSelected(menuItem);
         //----------------------
+
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        addEmployeeDialog = dialogBuilder.setPositiveButton("Save", addDialogClickListener)
+                .setNegativeButton("Cancel", addDialogClickListener)
+                .setView(R.layout.dialog_empl_edit).create();
+
+        renameDepartmentDialog = dialogBuilder.setPositiveButton("Save", renameDialogClickListener)
+                .setNegativeButton("Cancel", renameDialogClickListener)
+                .setView(R.layout.dialog_dep_rename).create();
     }
 
 
@@ -98,7 +184,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_dep_edit) {
+
+            renameDepartmentDialog.show();
+
+            return true;
+        }
+
+        if (id == R.id.action_dep_delete){
+
             return true;
         }
 
@@ -107,11 +201,13 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(final MenuItem item) {
         // Handle navigation view employeeItem clicks here.
         Department department = new Department();
         department.setId(item.getItemId());
         department.setDepName(item.getTitle().toString());
+
+        chosenItem = item;
         //int id = employeeItem.getItemId();
 
 
@@ -121,15 +217,44 @@ public class MainActivity extends AppCompatActivity
 
         final ListView listView = findViewById(R.id._employeeList);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-////                ((LinearLayout)listView.getSelectedItem()).setBackgroundColor(0xFF00FF00);
-//                view.setBackgroundColor(0xFF00FF00);
-//            }
-//        });
 
-        final List<Employee> employees = client.getEmployees(department);
+        //Delete dialog-----------------------------------------------------------------
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                final Employee employee = (Employee) listView.getItemAtPosition(position);
+
+                AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+
+                DialogInterface.OnClickListener deleteDialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                //Yes button clicked
+                                showNotification(attendanceClient.deleteEmployee(employee));
+                                MainActivity.this.onNavigationItemSelected(item);
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+
+
+                b.setMessage("Delete this employee?\n"+employee.getSurname()).setPositiveButton("Yes", deleteDialogClickListener)
+                        .setNegativeButton("No", deleteDialogClickListener).show();
+
+                return true;
+            }
+        });
+        //----------------------------------------------------------------------------------
+
+
+        final List<Employee> employees = attendanceClient.getEmployees(department);
 
         final EmplsAdapter adapter = new EmplsAdapter(this, employees);
 
@@ -140,14 +265,25 @@ public class MainActivity extends AppCompatActivity
 //            private View focusedView;
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                EmployeeActivity.setChoosenEmployee(employees.get(position));
+                EmployeeActivity.setChosenEmployee(employees.get(position));
                 Intent intent = new Intent(MainActivity.this, EmployeeActivity.class);
                 startActivity(intent);
             }
         });
 
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showNotification(boolean success){
+        if (success){
+            Snackbar.make(findViewById(R.id.fab), "Success!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }else {
+            Snackbar.make(findViewById(R.id.fab), "Failure!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
     }
 }
